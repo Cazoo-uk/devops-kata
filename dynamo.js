@@ -1,41 +1,42 @@
-var AWS = require("aws-sdk");
-AWS.config.update({ region: process.env.AWS_REGION });
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { DynamoDBDocumentClient, GetCommand, UpdateCommand } = require("@aws-sdk/lib-dynamodb");
 
-var ddb = new AWS.DynamoDB({ apiVersion: "2012-08-10" });
+var client = new DynamoDBClient({ region: process.env.AWS_REGION });
+const docClient = DynamoDBDocumentClient.from(client);
 
 const getParams = {
   TableName: process.env.DYNAMODB_TABLE,
   Key: {
-    COUNTER: { S: "OrderEvents" }
+    COUNTER: "OrderEvents"
   }
 };
 
 const saleParams = name => ({
   TableName: process.env.DYNAMODB_TABLE,
   Key: {
-    COUNTER: { S: "OrderEvents" }
+    COUNTER: "OrderEvents"
   },
-  UpdateExpression: "set EVENTS.#name = EVENTS.#name + :val",
   ExpressionAttributeNames: {
     "#name": name
   },
   ExpressionAttributeValues: {
-    ":val": { N: "1" }
+    ":val": 1,
   },
-  ReturnValues: "UPDATED_NEW"
+  ReturnValues: "UPDATED_NEW",
+  UpdateExpression: "SET EVENTS.#name = EVENTS.#name + :val",
 });
 
 const getCountOfSold = async () => {
-  const result = await ddb.getItem(getParams).promise();
-
-  const placed = read("vehicleSold", result);
-  const cancelled = read("vehicleSaleCancelled", result);
-  return placed - cancelled;
+  const command = new GetCommand(getParams);
+  const response = await docClient.send(command);
+  const placed = read("vehicleSold", response);
+  const cancelled = read("vehicleSaleCancelled", response);
+  return placed-cancelled;
 };
 
 const read = (name, item) => {
   try {
-    const val = item.Item.EVENTS.M[name].N;
+    const val = item.Item.EVENTS[name];
     return parseInt(val);
   } catch (e) {
     console.log(e);
@@ -45,7 +46,8 @@ const read = (name, item) => {
 
 const updateVehicleSales = async eventName => {
   try {
-    const result = await ddb.updateItem(saleParams(eventName)).promise();
+    const command = new UpdateCommand(saleParams(eventName));
+    const result = await docClient.send(command);
     console.log(result);
   } catch (e) {
     console.log(e);
