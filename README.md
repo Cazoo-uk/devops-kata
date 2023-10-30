@@ -2,7 +2,7 @@
 
 We've provided some source code for a small application which keeps track of the count of sales.
 
-Your task is to deploy the application to AWS Lambda using Infrastructure as Code. You do not need to start working on the task before the interview, the aim is to do this together. You won't need to integrate with a continuous deployment service, deploying from your local machine will suffice.  
+Your task is to deploy the application to AWS Lambda using Infrastructure as Code. You do not need to start working on the task before the interview, the aim is to do this together. You won't need to integrate with a continuous deployment service, deploying from your local machine will suffice. You are allowed to use your own AWS account or we can provide you with an AWS account (if you choose to use a AWS Account we provide you with all need to tag all resources with `Owner = "Platform Team"`).
 
 Familiarise yourself with the source code and figure out which AWS resources you will need to deploy. First you will need to deploy the getCountOfSold lambda, if you complete that we can look at deploying the updateVehicleSales lambda.
 
